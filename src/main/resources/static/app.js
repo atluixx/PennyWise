@@ -39,16 +39,32 @@ async function api(path, options = {}) {
 function element(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text != null) node.textContent = text; return node; }
 function button(label, action) { const el = element('button', 'text-button', label); el.type = 'button'; el.addEventListener('click', action); return el; }
 function money(value) { return Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function signOut() { state.categories = []; state.transactions = []; window.pennywiseSummary = { categories: [] }; window.dispatchEvent(new CustomEvent('pennywise:summary', { detail: window.pennywiseSummary })); state.token = null; sessionStorage.removeItem('pennywise-token'); $('#dashboard').hidden = true; $('#logout').hidden = true; $('#auth-view').hidden = false; }
+function signOut() { state.categories = []; state.transactions = []; window.pennywiseSummary = { categories: [] }; window.dispatchEvent(new CustomEvent('pennywise:summary', { detail: window.pennywiseSummary })); state.token = null; sessionStorage.removeItem('pennywise-token'); $('#dashboard').hidden = true; $('#logout').hidden = true; $('#auth-view').hidden = false; resetTransaction(); }
 function showDashboard() { $('#auth-view').hidden = true; $('#dashboard').hidden = false; $('#logout').hidden = false; }
-function resetTransaction() { const form = $('#transaction-form'); form.reset(); form.elements.id.value = ''; form.elements.transactionDate.value = new Date().toLocaleDateString('en-CA'); form.elements.type.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Add a transaction'; $('#save-transaction').textContent = 'Add transaction'; $('#cancel-edit').hidden = true; }
+let entryStep = 0;
+function showEntryStep(step, focus = false) {
+  entryStep = step;
+  document.querySelectorAll('[data-entry-step]').forEach(section => { section.hidden = Number(section.dataset.entryStep) !== step; });
+  $('#entry-progress').textContent = `${step + 1} of 3`;
+  $('#entry-progress-fill').style.width = `${(step + 1) * 100 / 3}%`;
+  $('#entry-back').hidden = step === 0;
+  $('#save-transaction').textContent = step === 2 ? ($('#transaction-form').elements.id.value ? 'Save changes' : 'Add transaction') : 'Continue';
+  if (step === 2) {
+    const form = $('#transaction-form');
+    const category = form.elements.categoryId.selectedOptions[0];
+    $('#entry-recap').textContent = `${form.elements.type.value === 'INCOME' ? 'Income' : 'Expense'} · ${money(form.elements.amount.value)} · ${category?.textContent || ''}`;
+  }
+  if (focus) document.querySelector(`[data-entry-step="${step}"] h3`).focus();
+}
+function resetTransaction() { const form = $('#transaction-form'); form.reset(); form.elements.id.value = ''; form.elements.categoryId.value = ''; form.elements.transactionDate.value = new Date().toLocaleDateString('en-CA'); form.elements.type.dispatchEvent(new Event('change', { bubbles: true })); form.elements.categoryId.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Add a transaction'; $('#cancel-edit').hidden = true; showEntryStep(0); }
 function renderCategories() {
   const select = $('#category-select'); const selected = select.value; select.replaceChildren();
-  if (!state.categories.length) { const option = element('option', '', 'Create a category first'); option.value = ''; select.append(option); }
+  const option = element('option', '', state.categories.length ? 'Choose a category' : 'Create a category first'); option.value = ''; select.append(option);
+  $('#entry-category-empty').hidden = state.categories.length > 0;
   for (const category of state.categories) { const option = element('option', '', category.name); option.value = category.id; select.append(option); }
   if ([...select.options].some(option => option.value === selected)) select.value = selected;
   const shortcuts = $('#category-shortcuts'); shortcuts.replaceChildren();
-  for (const category of state.categories.slice(0, 6)) { const chip = button(category.name, () => { select.value = String(category.id); select.dispatchEvent(new Event('change', { bubbles: true })); }); chip.className = 'category-chip'; chip.setAttribute('aria-pressed', String(select.value === String(category.id))); shortcuts.append(chip); }
+  for (const category of state.categories) { const chip = button(category.name, () => { select.value = String(category.id); select.dispatchEvent(new Event('change', { bubbles: true })); }); chip.className = 'category-chip'; chip.setAttribute('aria-pressed', String(select.value === String(category.id))); shortcuts.append(chip); }
   const list = $('#categories'); list.replaceChildren();
   if (!state.categories.length) list.append(element('p', 'empty', 'No categories yet.'));
   for (const category of state.categories) {
@@ -70,7 +86,7 @@ function renderTransactions() {
     info.append(element('div', 'row-name', item.description || category?.name || 'Transaction'));
     info.append(element('div', 'row-meta', `${category?.name || 'Category'} · ${item.transactionDate}`)); row.append(info);
     const right = element('div', 'row-actions'); right.append(element('span', 'row-amount', `${item.type === 'INCOME' ? '+' : '−'}${money(item.amount)}`));
-    right.append(button('Edit', () => { const f = $('#transaction-form'); for (const key of ['id','type','amount','transactionDate','description','categoryId']) f.elements[key].value = item[key] ?? ''; f.elements.type.dispatchEvent(new Event('change', { bubbles: true })); f.elements.categoryId.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Edit transaction'; $('#save-transaction').textContent = 'Save changes'; $('#cancel-edit').hidden = false; f.elements.amount.focus(); }));
+    right.append(button('Edit', () => { const f = $('#transaction-form'); for (const key of ['id','type','amount','transactionDate','description','categoryId']) f.elements[key].value = item[key] ?? ''; f.elements.type.dispatchEvent(new Event('change', { bubbles: true })); f.elements.categoryId.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Edit transaction'; $('#cancel-edit').hidden = false; showEntryStep(0, true); }));
     right.append(button('Delete', async () => { if (!confirm('Delete this transaction?')) return; try { await api(`/transactions/${item.id}`, { method: 'DELETE' }); await refresh(); notify('Transaction deleted.'); } catch (e) { notify(e.message, true); } })); row.append(right); rows.append(row);
   }
 }
@@ -92,11 +108,16 @@ async function refresh() {
 $('#auth-switch').addEventListener('click', () => { state.registering = !state.registering; $('#auth-title').textContent = state.registering ? 'Create your account' : 'Welcome back'; $('#auth-description').textContent = state.registering ? 'Start keeping track of your money.' : 'Sign in to see your finances.'; $('#auth-submit').textContent = state.registering ? 'Create account' : 'Sign in'; $('#switch-copy').textContent = state.registering ? 'Already have an account?' : 'New to PennyWise?'; $('#auth-switch').textContent = state.registering ? 'Sign in' : 'Create an account'; $('#auth-form').elements.password.autocomplete = state.registering ? 'new-password' : 'current-password'; });
 $('#auth-form').addEventListener('submit', async event => { event.preventDefault(); const f = event.currentTarget; const payload = JSON.stringify({ email: f.elements.email.value, password: f.elements.password.value }); $('#auth-submit').disabled = true; try { if (state.registering) { await api('/auth/register', { method: 'POST', body: payload }); state.registering = false; } const result = await api('/auth/login', { method: 'POST', body: payload }); state.token = result.accessToken; sessionStorage.setItem('pennywise-token', state.token); f.reset(); showDashboard(); await refresh(); } catch (e) { notify(e.message, true); } finally { $('#auth-submit').disabled = false; } });
 $('#logout').addEventListener('click', signOut);
-$('#category-select').addEventListener('change', () => { for (const [index, chip] of [...$('#category-shortcuts').children].entries()) chip.setAttribute('aria-pressed', String(String(state.categories[index].id) === $('#category-select').value)); });
+$('#category-select').addEventListener('change', () => { for (const [index, chip] of [...$('#category-shortcuts').children].entries()) chip.setAttribute('aria-pressed', String(String(state.categories[index]?.id) === $('#category-select').value)); });
 $('#transaction-filter').addEventListener('change', renderTransactions);
 $('#month').addEventListener('change', () => refresh().catch(e => notify(e.message, true)));
 $('#cancel-edit').addEventListener('click', resetTransaction);
+$('#entry-back').addEventListener('click', () => showEntryStep(Math.max(0, entryStep - 1), true));
 $('#category-form').addEventListener('submit', async event => { event.preventDefault(); const f = event.currentTarget; try { await api('/categories', { method: 'POST', body: JSON.stringify({ name: f.elements.name.value }) }); f.reset(); await refresh(); notify('Category added.'); } catch (e) { notify(e.message, true); } });
-$('#transaction-form').addEventListener('submit', async event => { event.preventDefault(); const f = event.currentTarget; const id = f.elements.id.value; const payload = { type: f.elements.type.value, amount: f.elements.amount.value, categoryId: Number(f.elements.categoryId.value), transactionDate: f.elements.transactionDate.value, description: f.elements.description.value || null }; const submit = $('#save-transaction'); submit.disabled = true; try { await api(id ? `/transactions/${id}` : '/transactions', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) }); resetTransaction(); await refresh(); notify(id ? 'Transaction updated.' : 'Transaction added.'); } catch (e) { notify(e.message, true); } finally { submit.disabled = false; } });
+$('#transaction-form').addEventListener('submit', async event => { event.preventDefault(); const f = event.currentTarget;
+  const field = entryStep === 0 ? f.elements.amount : entryStep === 1 ? f.elements.categoryId : f.elements.transactionDate;
+  if (!field.reportValidity()) return;
+  if (entryStep < 2) { showEntryStep(entryStep + 1, true); return; }
+  const id = f.elements.id.value; const payload = { type: f.elements.type.value, amount: f.elements.amount.value, categoryId: Number(f.elements.categoryId.value), transactionDate: f.elements.transactionDate.value, description: f.elements.description.value || null }; const submit = $('#save-transaction'); submit.disabled = true; try { await api(id ? `/transactions/${id}` : '/transactions', { method: id ? 'PUT' : 'POST', body: JSON.stringify(payload) }); resetTransaction(); await refresh(); notify(id ? 'Transaction updated.' : 'Transaction added.'); } catch (e) { notify(e.message, true); } finally { submit.disabled = false; } });
 $('#month').value = new Date().toLocaleDateString('en-CA').slice(0, 7); resetTransaction();
 if (state.token) { showDashboard(); refresh().catch(e => notify(e.message, true)); }

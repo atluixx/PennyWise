@@ -27,7 +27,35 @@
       <section class="panel insight-panel"><div class="section-heading"><div><h2>Where your money goes</h2><p>Expenses by category for the selected month.</p></div></div><div id="spending-chart"></div></section>
       <section class="panel"><div class="section-heading"><div><h2>Transactions</h2><p>Your entries for the selected month.</p></div><span id="transaction-count" class="count"></span></div><div class="transactions-tools"><input type="hidden" id="transaction-filter" value="ALL"><div id="filter-tabs"></div></div><div id="transactions" class="rows"></div></section>
       <section class="panel category-totals"><div class="section-heading"><div><h2>By category</h2><p>Income and expenses, side by side.</p></div></div><div id="category-totals" class="rows"></div></section>
-    </div><aside class="side-column"><section class="panel"><h2 id="transaction-heading">Add a transaction</h2><p class="support">Add an expense or income in a few steps.</p><form id="transaction-form"><input type="hidden" name="id"><div class="type-field"><span class="field-label">Type</span><input id="transaction-type" type="hidden" name="type" value="EXPENSE"><div id="type-tabs"></div></div><label>Amount<input name="amount" type="number" min="0.01" max="99999999999999999.99" step="0.01" placeholder="0.00" required></label><label>Category<select name="categoryId" id="category-select" required></select></label><div id="category-shortcuts" class="category-shortcuts" aria-label="Quick select category"></div><label>Date<input name="transactionDate" type="date" required></label><label>Description <span class="optional">optional</span><input name="description" maxlength="255" placeholder="What was this for?"></label><button class="primary" id="save-transaction">Add transaction</button><button type="button" class="quiet cancel" id="cancel-edit" hidden>Cancel editing</button></form></section>
+    </div><aside class="side-column"><section class="panel entry-panel" aria-labelledby="transaction-heading">
+        <div class="entry-header"><div><h2 id="transaction-heading">Add a transaction</h2><p class="support">Let’s take it one step at a time.</p></div><span id="entry-progress" class="entry-progress" aria-live="polite">1 of 3</span></div>
+        <div class="entry-progress-track" aria-hidden="true"><span id="entry-progress-fill"></span></div>
+        <form id="transaction-form" novalidate>
+          <input type="hidden" name="id">
+          <section class="entry-step" data-entry-step="0" aria-labelledby="entry-amount-heading">
+            <h3 id="entry-amount-heading" tabindex="-1">What happened?</h3>
+            <p class="entry-hint">Start with the type and amount.</p>
+            <div class="type-field"><span class="field-label">Type</span><input id="transaction-type" type="hidden" name="type" value="EXPENSE"><div id="type-tabs"></div></div>
+            <label>Amount<input name="amount" type="number" inputmode="decimal" min="0.01" max="99999999999999999.99" step="0.01" placeholder="0.00" required></label>
+          </section>
+          <section class="entry-step" data-entry-step="1" aria-labelledby="entry-category-heading" hidden>
+            <h3 id="entry-category-heading" tabindex="-1">Where does it belong?</h3>
+            <p class="entry-hint">Choose a category for this entry.</p>
+            <label>Category<select name="categoryId" id="category-select" required></select></label>
+            <div id="category-shortcuts" class="category-shortcuts" aria-label="Quick select category"></div>
+            <p id="entry-category-empty" class="entry-hint" hidden>Create a category below to continue.</p>
+          </section>
+          <section class="entry-step" data-entry-step="2" aria-labelledby="entry-details-heading" hidden>
+            <h3 id="entry-details-heading" tabindex="-1">A few final details</h3>
+            <p class="entry-hint">Check your entry before saving.</p>
+            <div class="entry-recap" id="entry-recap" aria-live="polite"></div>
+            <label>Date<input name="transactionDate" type="date" required></label>
+            <label>Description <span class="optional">optional</span><input name="description" maxlength="255" placeholder="What was this for?"></label>
+          </section>
+          <div class="entry-actions"><button type="button" class="quiet entry-back" id="entry-back" hidden>Back</button><button class="primary" id="save-transaction">Continue</button></div>
+          <button type="button" class="quiet cancel" id="cancel-edit" hidden>Cancel editing</button>
+        </form>
+      </section>
       <section class="panel"><h2>Categories</h2><p class="support">Create categories to organize your entries.</p><form id="category-form" class="inline-form"><label class="sr-only" for="category-name">Category name</label><input id="category-name" name="name" maxlength="255" placeholder="e.g. Groceries" required><span id="category-submit"></span></form><div id="categories" class="category-list"></div></section></aside></div>
   </section>
   <div id="message" class="message" role="status" aria-live="polite" hidden></div>
