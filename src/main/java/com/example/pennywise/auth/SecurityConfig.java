@@ -34,7 +34,7 @@ public class SecurityConfig {
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/register", "/auth/login", "/", "/index.html", "/app.js", "/style.css", "/favicon.ico", "/images/penny-wise.png").permitAll()
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/auth/register", "/auth/login", "/", "/index.html", "/app.js", "/style.css", "/favicon.ico", "/images/penny-wise-transparent.png").permitAll()
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
                 .build();

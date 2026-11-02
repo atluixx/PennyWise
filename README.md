@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/main/resources/static/images/penny-wise.png" alt="PennyWise logo" width="180">
+  <img src="src/main/resources/static/images/penny-wise-transparent.png" alt="PennyWise logo" width="180">
 </p>
 
 # PennyWise: personal finance, kept local
