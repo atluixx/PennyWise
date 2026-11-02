@@ -2,6 +2,20 @@
 const $ = (selector) => document.querySelector(selector);
 const state = { token: sessionStorage.getItem('pennywise-token'), categories: [], transactions: [], registering: false };
 let messageTimer;
+const themeToggle = $('#theme-toggle');
+function updateThemeButton() {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  themeToggle.textContent = dark ? 'Light mode' : 'Dark mode';
+  themeToggle.setAttribute('aria-pressed', String(dark));
+  themeToggle.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+}
+themeToggle.addEventListener('click', () => {
+  const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem('pennywise-theme', theme); } catch { /* Storage is optional. */ }
+  updateThemeButton();
+});
+updateThemeButton();
 function notify(message, error = false) {
   const box = $('#message'); box.textContent = message; box.classList.toggle('error', error); box.hidden = false;
   clearTimeout(messageTimer); messageTimer = setTimeout(() => { box.hidden = true; }, 6000);

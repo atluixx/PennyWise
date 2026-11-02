@@ -25,7 +25,7 @@ export function SpendingChart({ data }: { data: Datum[] }) {
   return <div className="spending-chart">
     <div className="donut-wrap">
       <svg viewBox="0 0 220 220" role="img" aria-label={`Expenses by category. Total ${format(total)}.`}>
-        <circle cx="110" cy="110" r="88" fill="none" stroke="#e8efea" strokeWidth="22" />
+        <circle cx="110" cy="110" r="88" fill="none" className="donut-track" strokeWidth="22" />
         {slices.map((slice, index) => <motion.path key={`${index}-${slice.label}`}
           d={arcPath(110, 110, 88, slice.start, slice.end)} fill="none" stroke={slice.color} strokeWidth="22"
           initial={reduced ? false : { pathLength: 0 }} animate={{ pathLength: 1, opacity: active === null || active === index ? 1 : 0.35 }}

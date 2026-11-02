@@ -4,3 +4,40 @@
 /* Spending insight and quick category selection */
 .insight-panel{overflow:hidden}.spending-chart{display:flex;align-items:center;gap:clamp(20px,4vw,48px);padding:4px 4px 8px}.donut-wrap{position:relative;flex:0 0 min(220px,40%);max-width:220px;aspect-ratio:1}.donut-wrap svg{display:block;width:100%;height:100%;transform:rotate(0)}.donut-center{position:absolute;inset:25%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;min-width:0}.donut-center span{font-size:12px;color:#617469;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.donut-center strong{font-size:20px;font-variant-numeric:tabular-nums;letter-spacing:-.03em;margin-top:5px}.chart-legend{flex:1;min-width:0;list-style:none;padding:0;margin:0}.chart-legend button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;text-align:left;padding:10px 6px;border-radius:7px;color:#2c3b32;font-size:13px}.chart-legend button:hover,.chart-legend button:focus-visible{background:#f0f5ef}.legend-dot{width:10px;height:10px;border-radius:50%;flex:none}.legend-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chart-legend strong{font-variant-numeric:tabular-nums}.legend-percent{width:38px;text-align:right;color:#68796d;font-size:12px}.chart-empty{padding:18px 0 10px;color:#607168;line-height:1.5;font-size:14px}.category-shortcuts{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.category-chip{border:1px solid #d9e5da;background:#f8fbf8;color:#345846;border-radius:20px;padding:6px 10px;font-size:12px;line-height:1.2}.category-chip:hover,.category-chip[aria-pressed=true]{background:#dfeddf;border-color:#a8c6aa;color:#204c34}.side-column .support{margin-bottom:5px}@media(max-width:600px){.spending-chart{flex-direction:column;align-items:stretch;gap:12px}.donut-wrap{width:190px;max-width:65%;align-self:center}.chart-legend{width:100%}.legend-percent{width:34px}}
 .cashflow-chart{display:grid;gap:16px;padding:3px 0 8px}.cashflow-row{display:grid;grid-template-columns:72px 1fr minmax(65px,auto);gap:12px;align-items:center;font-size:13px;color:#43594a}.cashflow-row strong{text-align:right;color:#233c2d;font-variant-numeric:tabular-nums}.cashflow-track{height:10px;overflow:hidden;background:#edf2ed;border-radius:8px}.cashflow-fill{height:100%;border-radius:8px;transition:width .45s ease}.income-fill{background:#477e5e}.expense-fill{background:#d39976}@media(max-width:400px){.cashflow-row{grid-template-columns:60px 1fr minmax(52px,auto);gap:8px}}
+/* Theme preference applies to both authentication and dashboard views. */
+:root{color-scheme:light;--chart-track:#e8efea}.donut-track{stroke:var(--chart-track)}.theme-toggle{margin-left:auto;border:1px solid #cbd8cc;background:#fff;color:#284635;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:650;white-space:nowrap}.theme-toggle:hover{background:#edf4ed}.topbar #logout:not([hidden]){margin-left:12px}
+:root[data-theme="dark"]{color-scheme:dark;--chart-track:#34463a;background:#111914;color:#e6f0e7}
+[data-theme="dark"] .topbar{background:#19251d;border-color:#314339}
+[data-theme="dark"] .brand,[data-theme="dark"] .brand:visited{color:#edf5ed}
+[data-theme="dark"] .brand img{filter:none}
+[data-theme="dark"] .top-label{color:#bdccc0;border-color:#415347}
+[data-theme="dark"] .theme-toggle{background:#27392c;color:#e5f0e5;border-color:#506858}
+[data-theme="dark"] .theme-toggle:hover{background:#344a39}
+[data-theme="dark"] .auth-form,[data-theme="dark"] .panel{background:#1b2920;border-color:#394d3d;box-shadow:none}
+[data-theme="dark"] .intro>p:not(.intro-line),[data-theme="dark"] .auth-form>p,[data-theme="dark"] .section-heading p,[data-theme="dark"] .heading-row p,[data-theme="dark"] .support,[data-theme="dark"] .empty,[data-theme="dark"] .chart-empty{color:#c0d0c3}
+[data-theme="dark"] .intro-rule{background:#506958}
+[data-theme="dark"] label,[data-theme="dark"] .field-label{color:#d7e5d8}
+[data-theme="dark"] input,[data-theme="dark"] select{background:#142019;color:#edf4ed;border-color:#566b5a}
+[data-theme="dark"] input::placeholder{color:#b5c5b8}
+[data-theme="dark"] .primary{background:#a8d4ab;color:#132b1a}
+[data-theme="dark"] .primary:hover{background:#bde5bf}
+[data-theme="dark"] .secondary,[data-theme="dark"] .easy-tab-indicator{background:#3a5540;color:#eff9ef}
+[data-theme="dark"] .quiet,[data-theme="dark"] .text-button{color:#b9dfb9}
+[data-theme="dark"] .notice{background:#273a2c;color:#d4e7d3}
+[data-theme="dark"] .summary{background:#253d2c}
+[data-theme="dark"] .summary>div{border-color:#4b6250}
+[data-theme="dark"] .summary>div:last-child{background:#a8d4ab;color:#142b1a}
+[data-theme="dark"] .rows,[data-theme="dark"] .row,[data-theme="dark"] .category-item{border-color:#384a3c}
+[data-theme="dark"] .row-meta,[data-theme="dark"] .optional,[data-theme="dark"] .donut-center span,[data-theme="dark"] .legend-percent{color:#bbcdbd}
+[data-theme="dark"] .count,[data-theme="dark"] .easy-tabs{background:#283b2d;color:#d8ebd8;border-color:#405b46}
+[data-theme="dark"] .easy-tab{color:#c3d5c5}
+[data-theme="dark"] .easy-tab[aria-pressed=true]{color:#f1faf1}
+[data-theme="dark"] .category-chip{background:#26392c;color:#d2e7d2;border-color:#526b56}
+[data-theme="dark"] .category-chip:hover,[data-theme="dark"] .category-chip[aria-pressed=true]{background:#456849;color:#fff;border-color:#8cb891}
+[data-theme="dark"] .chart-legend button,[data-theme="dark"] .cashflow-row,[data-theme="dark"] .cashflow-row strong{color:#e1ede2}
+[data-theme="dark"] .chart-legend button:hover,[data-theme="dark"] .chart-legend button:focus-visible,[data-theme="dark"] .row-actions .text-button:hover,[data-theme="dark"] .category-list .text-button:hover{background:#344938}
+[data-theme="dark"] .cashflow-track{background:#344a39}
+[data-theme="dark"] .income-fill{background:#93c79c}
+[data-theme="dark"] .expense-fill{background:#e9a886}
+[data-theme="dark"] ::selection{background:#577c5b;color:#fff}
+@media(max-width:600px){.theme-toggle{font-size:12px;padding:7px 9px}.topbar #logout:not([hidden]){margin-left:4px}}

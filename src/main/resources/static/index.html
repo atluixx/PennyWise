@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="light dark">
+  <script>try { const t = localStorage.getItem("pennywise-theme"); document.documentElement.dataset.theme = t === "dark" || t === "light" ? t : (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"); } catch (_) { document.documentElement.dataset.theme = "light"; }</script>
   <title>PennyWise — personal finance</title>
   <link rel="icon" type="image/png" href="/images/penny-wise-transparent.png">
   <link rel="stylesheet" href="/style.css">
@@ -11,7 +12,7 @@
   <script type="module" src="/easyui.js"></script>
 </head>
 <body>
-<header class="topbar"><a class="brand" href="/"><img src="/images/penny-wise-transparent.png" alt="" width="42" height="42">Penny<span>Wise</span><i>.</i></a><span class="top-label">Your money, in focus</span><button id="logout" class="quiet" hidden>Sign out</button></header>
+<header class="topbar"><a class="brand" href="/"><img src="/images/penny-wise-transparent.png" alt="" width="42" height="42">Penny<span>Wise</span><i>.</i></a><span class="top-label">Your money, in focus</span><button id="theme-toggle" class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode">Dark mode</button><button id="logout" class="quiet" hidden>Sign out</button></header>
 <main>
   <section id="auth-view" class="auth-view">
     <div class="intro"><h1>Make sense of<br>your money.</h1><p>Track what comes in, what goes out, and what’s left over. One simple entry at a time.</p><div class="intro-rule"></div><p class="small">A private space for your personal finances.</p></div>
