@@ -40,6 +40,12 @@ class ApiIntegrationTest {
     private String bearer(String token) { return "Bearer " + token; }
 
     @Test
+    void servesTheFrontendAndEasyUiBundleWithoutSigningIn() throws Exception {
+        mvc.perform(get("/")).andExpect(status().isOk());
+        mvc.perform(get("/easyui.js")).andExpect(status().isOk());
+    }
+
+    @Test
     void protectsEndpointsAndRejectsIncorrectCredentials() throws Exception {
         mvc.perform(get("/categories")).andExpect(status().isUnauthorized());
         mvc.perform(get("/categories").header("Authorization", "Bearer invalid"))

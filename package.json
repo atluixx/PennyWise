@@ -1,0 +1,7 @@
+{
+  "name": "pennywise-frontend",
+  "private": true,
+  "scripts": { "build": "esbuild frontend/main.tsx --bundle --minify --format=esm --outfile=src/main/resources/static/easyui.js" },
+  "dependencies": { "framer-motion": "^12.23.24", "react": "^19.2.0", "react-dom": "^19.2.0" },
+  "devDependencies": { "esbuild": "^0.25.12" }
+}

@@ -3,3 +3,5 @@
 .env
 *.mv.db
 /.impeccable/
+
+/node_modules/

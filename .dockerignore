@@ -3,3 +3,4 @@ data/
 .env
 .git/
 .impeccable/
+node_modules/

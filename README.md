@@ -85,3 +85,12 @@ Tests use JUnit 5, Mockito, a separate in-memory H2 database, and a test-only JW
 Java 21 · Spring Boot 3 · Spring Web · Spring Data JPA · Spring Security and JWT · PostgreSQL · H2 · Maven · Docker
 
 Hibernate's `ddl-auto=update` is intended for local development; it is not a substitute for database migrations or backups. This configuration is intended for local use, not public deployment.
+
+## Frontend development
+
+The app is served by Spring Boot. Its transaction filters and type selector use adapted [EasyUI Animated Tabs](https://easyui.site/components/animated-tabs), and the category button uses [PressButton](https://easyui.site/components/press-button). The original component is MIT-licensed; see [`frontend/EASYUI-LICENSE.txt`](frontend/EASYUI-LICENSE.txt). The adapted React source is in `frontend/`; the bundled JavaScript is committed so Docker and Maven do not need Node.js. After changing the component, rebuild it with Node.js and npm:
+
+```sh
+npm ci
+npm run build
+```
