@@ -48,3 +48,44 @@ if (chartRoot) {
   }
   createRoot(chartRoot).render(<Chart />);
 }
+
+import { SettleModal, type DialogOptions } from './components/SettleModal';
+declare global { interface Window { pennywiseDialog?: (options: DialogOptions) => Promise<string | boolean | null> } }
+const dialogHost = document.getElementById('dialog-host');
+if (dialogHost) {
+  const dialogRoot = createRoot(dialogHost);
+  let pending: ((value: string | boolean | null) => void) | null = null;
+  window.pennywiseDialog = options => new Promise(resolve => {
+    if (pending) { resolve(null); return; }
+    pending = resolve;
+    dialogRoot.render(<SettleModal options={options} onClose={value => {
+      dialogRoot.render(null);
+      const complete = pending;
+      pending = null;
+      complete?.(value);
+    }} />);
+  });
+}
+
+import { Alert } from './components/Alert';
+const alertHost = document.getElementById('message');
+if (alertHost) {
+  function Notifications() {
+    const [notice, setNotice] = React.useState({ message: '', error: false });
+    React.useEffect(() => {
+      const show = (event: Event) => setNotice((event as CustomEvent<{message: string; error: boolean}>).detail);
+      window.addEventListener('pennywise:notice', show);
+      return () => window.removeEventListener('pennywise:notice', show);
+    }, []);
+    React.useEffect(() => {
+      if (!notice.message) return;
+      const timer = window.setTimeout(() => setNotice({message: '', error: false}), 6000);
+      return () => window.clearTimeout(timer);
+    }, [notice]);
+    return <Alert message={notice.message} error={notice.error} onDismiss={() => setNotice({message: '', error: false})} />;
+  }
+  alertHost.hidden = false;
+  createRoot(alertHost).render(<Notifications />);
+  window.pennywiseNotify = (message, error) => window.dispatchEvent(new CustomEvent('pennywise:notice', {detail: {message, error}}));
+}
+declare global { interface Window { pennywiseNotify?: (message: string, error: boolean) => void } }

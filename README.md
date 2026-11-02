@@ -88,7 +88,7 @@ Hibernate's `ddl-auto=update` is intended for local development; it is not a sub
 
 ## Frontend development
 
-The app is served by Spring Boot. Its transaction filters and type selector use adapted [EasyUI Animated Tabs](https://easyui.site/components/animated-tabs), and the category button uses [PressButton](https://easyui.site/components/press-button). The original component is MIT-licensed; see [`frontend/EASYUI-LICENSE.txt`](frontend/EASYUI-LICENSE.txt). The adapted React source is in `frontend/`; the bundled JavaScript is committed so Docker and Maven do not need Node.js. After changing the component, rebuild it with Node.js and npm:
+The app is served by Spring Boot. Its transaction filters and type selector use adapted [EasyUI Animated Tabs](https://easyui.site/components/animated-tabs), the category button uses [PressButton](https://easyui.site/components/press-button), confirmations use [SettleModal](https://easyui.site/components/settle-modal), and notifications use [Alert](https://easyui.site/components/alert). The original component is MIT-licensed; see [`frontend/EASYUI-LICENSE.txt`](frontend/EASYUI-LICENSE.txt). The adapted React source is in `frontend/`; the bundled JavaScript is committed so Docker and Maven do not need Node.js. After changing the component, rebuild it with Node.js and npm:
 
 ```sh
 npm ci

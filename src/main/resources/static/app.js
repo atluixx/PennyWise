@@ -17,6 +17,7 @@ themeToggle.addEventListener('click', () => {
 });
 updateThemeButton();
 function notify(message, error = false) {
+  if (window.pennywiseNotify) { window.pennywiseNotify(message, error); return; }
   const box = $('#message'); box.textContent = message; box.classList.toggle('error', error); box.hidden = false;
   clearTimeout(messageTimer); messageTimer = setTimeout(() => { box.hidden = true; }, 6000);
 }
@@ -35,6 +36,10 @@ async function api(path, options = {}) {
   }
   const text = await response.text();
   return text ? JSON.parse(text) : null;
+}
+function openDialog(options) {
+  if (!window.pennywiseDialog) { notify('The dialog is still loading. Please try again.', true); return Promise.resolve(null); }
+  return window.pennywiseDialog(options);
 }
 function element(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text != null) node.textContent = text; return node; }
 function button(label, action) { const el = element('button', 'text-button', label); el.type = 'button'; el.addEventListener('click', action); return el; }
@@ -70,8 +75,8 @@ function renderCategories() {
   for (const category of state.categories) {
     const row = element('div', 'category-item'); row.append(element('span', '', category.name));
     const actions = element('div', 'row-actions');
-    actions.append(button('Rename', async () => { const name = prompt('New category name:', category.name); if (name === null) return; try { await api(`/categories/${category.id}`, { method: 'PUT', body: JSON.stringify({ name }) }); await refresh(); notify('Category updated.'); } catch (e) { notify(e.message, true); } }));
-    actions.append(button('Delete', async () => { if (!confirm(`Delete ${category.name}?`)) return; try { await api(`/categories/${category.id}`, { method: 'DELETE' }); await refresh(); notify('Category deleted.'); } catch (e) { notify(e.message.includes('conflicts') ? 'Delete this category’s transactions first.' : e.message, true); } }));
+    actions.append(button('Rename', async () => { const name = await openDialog({ title: 'Rename category', description: 'Choose a new name for this category.', confirmLabel: 'Save name', initialValue: category.name }); if (typeof name !== 'string') return; try { await api(`/categories/${category.id}`, { method: 'PUT', body: JSON.stringify({ name }) }); await refresh(); notify('Category updated.'); } catch (e) { notify(e.message, true); } }));
+    actions.append(button('Delete', async () => { if (!await openDialog({ title: 'Delete category?', description: `Delete ${category.name}? Categories with transactions cannot be deleted.`, confirmLabel: 'Delete category', destructive: true })) return; try { await api(`/categories/${category.id}`, { method: 'DELETE' }); await refresh(); notify('Category deleted.'); } catch (e) { notify(e.message.includes('conflicts') ? 'Delete this category’s transactions first.' : e.message, true); } }));
     row.append(actions); list.append(row);
   }
 }
@@ -87,7 +92,7 @@ function renderTransactions() {
     info.append(element('div', 'row-meta', `${category?.name || 'Category'} · ${item.transactionDate}`)); row.append(info);
     const right = element('div', 'row-actions'); right.append(element('span', 'row-amount', `${item.type === 'INCOME' ? '+' : '−'}${money(item.amount)}`));
     right.append(button('Edit', () => { const f = $('#transaction-form'); for (const key of ['id','type','amount','transactionDate','description','categoryId']) f.elements[key].value = item[key] ?? ''; f.elements.type.dispatchEvent(new Event('change', { bubbles: true })); f.elements.categoryId.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Edit transaction'; $('#cancel-edit').hidden = false; showEntryStep(0, true); }));
-    right.append(button('Delete', async () => { if (!confirm('Delete this transaction?')) return; try { await api(`/transactions/${item.id}`, { method: 'DELETE' }); await refresh(); notify('Transaction deleted.'); } catch (e) { notify(e.message, true); } })); row.append(right); rows.append(row);
+    right.append(button('Delete', async () => { if (!await openDialog({ title: 'Delete transaction?', description: 'This transaction will be permanently removed.', confirmLabel: 'Delete transaction', destructive: true })) return; try { await api(`/transactions/${item.id}`, { method: 'DELETE' }); await refresh(); notify('Transaction deleted.'); } catch (e) { notify(e.message, true); } })); row.append(right); rows.append(row);
   }
 }
 function renderSummary(summary) {
