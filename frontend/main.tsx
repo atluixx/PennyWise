@@ -26,3 +26,25 @@ for (const control of controls) {
 import { PressButton } from './components/PressButton';
 const categoryButton = document.getElementById('category-submit');
 if (categoryButton) createRoot(categoryButton).render(<PressButton>Add</PressButton>);
+
+import { SpendingChart } from './components/SpendingChart';
+type Summary = { categories: {categoryName: string; expenses: number}[] };
+declare global { interface Window { pennywiseSummary?: Summary } }
+const chartRoot = document.getElementById('spending-chart');
+if (chartRoot) {
+  const colors = ['#315b47', '#789d79', '#d39b71', '#7b8d9d', '#b797b2', '#b6a069', '#587e76'];
+  function Chart() {
+    const [summary, setSummary] = React.useState<Summary | undefined>(window.pennywiseSummary);
+    React.useEffect(() => {
+      const update = (event: Event) => setSummary((event as CustomEvent<Summary>).detail);
+      window.addEventListener('pennywise:summary', update);
+      if (window.pennywiseSummary) setSummary(window.pennywiseSummary);
+      return () => window.removeEventListener('pennywise:summary', update);
+    }, []);
+    const data = (summary?.categories || []).filter(item => Number(item.expenses) > 0)
+      .sort((a, b) => Number(b.expenses) - Number(a.expenses))
+      .map((item, index) => ({ label: item.categoryName, value: Number(item.expenses), color: colors[index % colors.length] }));
+    return <SpendingChart data={data} />;
+  }
+  createRoot(chartRoot).render(<Chart />);
+}

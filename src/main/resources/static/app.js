@@ -25,7 +25,7 @@ async function api(path, options = {}) {
 function element(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text != null) node.textContent = text; return node; }
 function button(label, action) { const el = element('button', 'text-button', label); el.type = 'button'; el.addEventListener('click', action); return el; }
 function money(value) { return Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function signOut() { state.token = null; sessionStorage.removeItem('pennywise-token'); $('#dashboard').hidden = true; $('#logout').hidden = true; $('#auth-view').hidden = false; }
+function signOut() { state.categories = []; state.transactions = []; window.pennywiseSummary = { categories: [] }; window.dispatchEvent(new CustomEvent('pennywise:summary', { detail: window.pennywiseSummary })); state.token = null; sessionStorage.removeItem('pennywise-token'); $('#dashboard').hidden = true; $('#logout').hidden = true; $('#auth-view').hidden = false; }
 function showDashboard() { $('#auth-view').hidden = true; $('#dashboard').hidden = false; $('#logout').hidden = false; }
 function resetTransaction() { const form = $('#transaction-form'); form.reset(); form.elements.id.value = ''; form.elements.transactionDate.value = new Date().toLocaleDateString('en-CA'); form.elements.type.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Add a transaction'; $('#save-transaction').textContent = 'Add transaction'; $('#cancel-edit').hidden = true; }
 function renderCategories() {
@@ -33,6 +33,8 @@ function renderCategories() {
   if (!state.categories.length) { const option = element('option', '', 'Create a category first'); option.value = ''; select.append(option); }
   for (const category of state.categories) { const option = element('option', '', category.name); option.value = category.id; select.append(option); }
   if ([...select.options].some(option => option.value === selected)) select.value = selected;
+  const shortcuts = $('#category-shortcuts'); shortcuts.replaceChildren();
+  for (const category of state.categories.slice(0, 6)) { const chip = button(category.name, () => { select.value = String(category.id); select.dispatchEvent(new Event('change', { bubbles: true })); }); chip.className = 'category-chip'; chip.setAttribute('aria-pressed', String(select.value === String(category.id))); shortcuts.append(chip); }
   const list = $('#categories'); list.replaceChildren();
   if (!state.categories.length) list.append(element('p', 'empty', 'No categories yet.'));
   for (const category of state.categories) {
@@ -54,11 +56,16 @@ function renderTransactions() {
     info.append(element('div', 'row-name', item.description || category?.name || 'Transaction'));
     info.append(element('div', 'row-meta', `${category?.name || 'Category'} · ${item.transactionDate}`)); row.append(info);
     const right = element('div', 'row-actions'); right.append(element('span', 'row-amount', `${item.type === 'INCOME' ? '+' : '−'}${money(item.amount)}`));
-    right.append(button('Edit', () => { const f = $('#transaction-form'); for (const key of ['id','type','amount','transactionDate','description','categoryId']) f.elements[key].value = item[key] ?? ''; f.elements.type.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Edit transaction'; $('#save-transaction').textContent = 'Save changes'; $('#cancel-edit').hidden = false; f.elements.amount.focus(); }));
+    right.append(button('Edit', () => { const f = $('#transaction-form'); for (const key of ['id','type','amount','transactionDate','description','categoryId']) f.elements[key].value = item[key] ?? ''; f.elements.type.dispatchEvent(new Event('change', { bubbles: true })); f.elements.categoryId.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Edit transaction'; $('#save-transaction').textContent = 'Save changes'; $('#cancel-edit').hidden = false; f.elements.amount.focus(); }));
     right.append(button('Delete', async () => { if (!confirm('Delete this transaction?')) return; try { await api(`/transactions/${item.id}`, { method: 'DELETE' }); await refresh(); notify('Transaction deleted.'); } catch (e) { notify(e.message, true); } })); row.append(right); rows.append(row);
   }
 }
 function renderSummary(summary) {
+  window.pennywiseSummary = summary; window.dispatchEvent(new CustomEvent('pennywise:summary', { detail: summary }));
+  const income = Number(summary.totalIncome), expense = Number(summary.totalExpenses), max = Math.max(income, expense);
+  $('#income-bar').style.width = `${max ? income / max * 100 : 0}%`; $('#expense-bar').style.width = `${max ? expense / max * 100 : 0}%`;
+  $('#income-bar-value').textContent = money(income); $('#expense-bar-value').textContent = money(expense);
+  $('#cashflow-chart').setAttribute('aria-label', `Income ${money(income)} and expenses ${money(expense)} for ${summary.month}.`);
   $('#income').textContent = money(summary.totalIncome); $('#expenses').textContent = money(summary.totalExpenses); $('#balance').textContent = money(summary.balance);
   const rows = $('#category-totals'); rows.replaceChildren();
   if (!summary.categories.length) rows.append(element('p', 'empty', 'Category totals will appear once you add a transaction.'));
@@ -71,6 +78,7 @@ async function refresh() {
 $('#auth-switch').addEventListener('click', () => { state.registering = !state.registering; $('#auth-title').textContent = state.registering ? 'Create your account' : 'Welcome back'; $('#auth-description').textContent = state.registering ? 'Start keeping track of your money.' : 'Sign in to see your finances.'; $('#auth-submit').textContent = state.registering ? 'Create account' : 'Sign in'; $('#switch-copy').textContent = state.registering ? 'Already have an account?' : 'New to PennyWise?'; $('#auth-switch').textContent = state.registering ? 'Sign in' : 'Create an account'; $('#auth-form').elements.password.autocomplete = state.registering ? 'new-password' : 'current-password'; });
 $('#auth-form').addEventListener('submit', async event => { event.preventDefault(); const f = event.currentTarget; const payload = JSON.stringify({ email: f.elements.email.value, password: f.elements.password.value }); $('#auth-submit').disabled = true; try { if (state.registering) { await api('/auth/register', { method: 'POST', body: payload }); state.registering = false; } const result = await api('/auth/login', { method: 'POST', body: payload }); state.token = result.accessToken; sessionStorage.setItem('pennywise-token', state.token); f.reset(); showDashboard(); await refresh(); } catch (e) { notify(e.message, true); } finally { $('#auth-submit').disabled = false; } });
 $('#logout').addEventListener('click', signOut);
+$('#category-select').addEventListener('change', () => { for (const [index, chip] of [...$('#category-shortcuts').children].entries()) chip.setAttribute('aria-pressed', String(String(state.categories[index].id) === $('#category-select').value)); });
 $('#transaction-filter').addEventListener('change', renderTransactions);
 $('#month').addEventListener('change', () => refresh().catch(e => notify(e.message, true)));
 $('#cancel-edit').addEventListener('click', resetTransaction);
