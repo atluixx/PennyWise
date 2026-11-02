@@ -39,8 +39,8 @@ async function api(path, options = {}) {
 function element(tag, className, text) { const node = document.createElement(tag); if (className) node.className = className; if (text != null) node.textContent = text; return node; }
 function button(label, action) { const el = element('button', 'text-button', label); el.type = 'button'; el.addEventListener('click', action); return el; }
 function money(value) { return Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function signOut() { state.categories = []; state.transactions = []; window.pennywiseSummary = { categories: [] }; window.dispatchEvent(new CustomEvent('pennywise:summary', { detail: window.pennywiseSummary })); state.token = null; sessionStorage.removeItem('pennywise-token'); $('#dashboard').hidden = true; $('#dashboard-nav').hidden = true; $('#logout').hidden = true; $('#auth-view').hidden = false; }
-function showDashboard() { $('#auth-view').hidden = true; $('#dashboard').hidden = false; $('#dashboard-nav').hidden = false; $('#logout').hidden = false; }
+function signOut() { state.categories = []; state.transactions = []; window.pennywiseSummary = { categories: [] }; window.dispatchEvent(new CustomEvent('pennywise:summary', { detail: window.pennywiseSummary })); state.token = null; sessionStorage.removeItem('pennywise-token'); $('#dashboard').hidden = true; $('#logout').hidden = true; $('#auth-view').hidden = false; }
+function showDashboard() { $('#auth-view').hidden = true; $('#dashboard').hidden = false; $('#logout').hidden = false; }
 function resetTransaction() { const form = $('#transaction-form'); form.reset(); form.elements.id.value = ''; form.elements.transactionDate.value = new Date().toLocaleDateString('en-CA'); form.elements.type.dispatchEvent(new Event('change', { bubbles: true })); $('#transaction-heading').textContent = 'Add a transaction'; $('#save-transaction').textContent = 'Add transaction'; $('#cancel-edit').hidden = true; }
 function renderCategories() {
   const select = $('#category-select'); const selected = select.value; select.replaceChildren();

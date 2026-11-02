@@ -32,7 +32,7 @@ type Summary = { categories: {categoryName: string; expenses: number}[] };
 declare global { interface Window { pennywiseSummary?: Summary } }
 const chartRoot = document.getElementById('spending-chart');
 if (chartRoot) {
-  const colors = ['#273954', '#6c8cb7', '#9db8dc', '#7c8495', '#b0c8eb', '#9c8ead', '#679095'];
+  const colors = ['#315b47', '#789d79', '#d39b71', '#7b8d9d', '#b797b2', '#b6a069', '#587e76'];
   function Chart() {
     const [summary, setSummary] = React.useState<Summary | undefined>(window.pennywiseSummary);
     React.useEffect(() => {
